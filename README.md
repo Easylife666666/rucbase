@@ -1,5 +1,6 @@
-# IKUN
-lh22331096
+# Notice
+我直接把rucbase仓库迁移过来了。原仓库见：https://github.com/ruc-deke/rucbase-lab#
+以下是原仓库的README。
 # RucBase
 ```
  ____  _   _  ____ ____    _    ____  _____ 
