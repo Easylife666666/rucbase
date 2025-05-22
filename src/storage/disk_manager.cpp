@@ -31,7 +31,9 @@ void DiskManager::write_page(int fd, page_id_t page_no, const char *offset, int 
     // 1.lseek()定位到文件头，通过(fd,page_no)可以定位指定页面及其在磁盘文件中的偏移量
     // 2.调用write()函数
     // 注意write返回值与num_bytes不等时 throw InternalError("DiskManager::write_page Error");
-
+    lseek(fd,page_no*PAGE_SIZE,0);
+    if(write(fd,offset,num_bytes)!=num_bytes)
+        throw InternalError("DiskManager::write_page Error");
 }
 
 /**
@@ -46,7 +48,9 @@ void DiskManager::read_page(int fd, page_id_t page_no, char *offset, int num_byt
     // 1.lseek()定位到文件头，通过(fd,page_no)可以定位指定页面及其在磁盘文件中的偏移量
     // 2.调用read()函数
     // 注意read返回值与num_bytes不等时，throw InternalError("DiskManager::read_page Error");
-
+    lseek(fd,page_no*PAGE_SIZE,0);
+    if(read(fd,offset,num_bytes)!=num_bytes)
+        throw InternalError("DiskManager::read_page Error");
 }
 
 /**
@@ -102,6 +106,13 @@ void DiskManager::create_file(const std::string &path) {
     // Todo:
     // 调用open()函数，使用O_CREAT模式
     // 注意不能重复创建相同文件
+    int id;
+    if(this->is_file(path))
+        throw FileExistsError(path);
+    id=open(path.c_str(),O_RDONLY|O_CREAT,0666);
+    if(id==-1)
+        UnixError();
+    close(id);
 }
 
 /**
@@ -112,7 +123,15 @@ void DiskManager::destroy_file(const std::string &path) {
     // Todo:
     // 调用unlink()函数
     // 注意不能删除未关闭的文件
-    
+    if(!this->is_file(path)) {  //是否存在
+        throw FileNotFoundError(path);
+    }
+    if(this->path2fd_.count(path)) {  //是否未关闭
+        throw FileNotClosedError(path);
+    }
+    if(unlink(path.c_str()) < 0) {
+        throw UnixError();
+    }
 }
 
 
@@ -125,7 +144,20 @@ int DiskManager::open_file(const std::string &path) {
     // Todo:
     // 调用open()函数，使用O_RDWR模式
     // 注意不能重复打开相同文件，并且需要更新文件打开列表
-
+    int id;
+    if(!this->is_file(path)) {  //是否存在
+        throw FileNotFoundError(path);
+    }
+    if(this->path2fd_.count(path)) {  //是否未关闭
+        throw FileNotClosedError(path);
+    }
+    id=open(path.c_str(),O_RDWR);
+    if(id<0){
+        throw UnixError();
+    }
+    this->path2fd_[path]=id;
+    this->fd2path_[id]=path;
+    return id;
 }
 
 /**
@@ -136,7 +168,21 @@ void DiskManager::close_file(int fd) {
     // Todo:
     // 调用close()函数
     // 注意不能关闭未打开的文件，并且需要更新文件打开列表
-
+    if(!this->fd2path_.count(fd)) {  //是否未关闭
+        throw FileNotOpenError(fd);
+    }
+    if(close(fd) == -1) {
+        throw UnixError();
+        return;
+    }
+    auto it1 = path2fd_.find(this->get_file_name(fd)); //删除path2fd中相应的映射
+    if (it1 != path2fd_.end()) {
+        path2fd_.erase(it1);
+    }
+    auto it2 = fd2path_.find(fd); //删除fd2path中相应的映射
+    if (it2 != fd2path_.end()) {
+        fd2path_.erase(it2);
+    }
 }
 
 
