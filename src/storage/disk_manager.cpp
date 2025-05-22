@@ -123,10 +123,10 @@ void DiskManager::destroy_file(const std::string &path) {
     // Todo:
     // 调用unlink()函数
     // 注意不能删除未关闭的文件
-    if(!this->is_file(path)) {  //是否存在
+    if(!this->is_file(path)) {
         throw FileNotFoundError(path);
     }
-    if(this->path2fd_.count(path)) {  //是否未关闭
+    if(this->path2fd_.count(path)) {
         throw FileNotClosedError(path);
     }
     if(unlink(path.c_str()) < 0) {
@@ -145,10 +145,10 @@ int DiskManager::open_file(const std::string &path) {
     // 调用open()函数，使用O_RDWR模式
     // 注意不能重复打开相同文件，并且需要更新文件打开列表
     int id;
-    if(!this->is_file(path)) {  //是否存在
+    if(!this->is_file(path)) {
         throw FileNotFoundError(path);
     }
-    if(this->path2fd_.count(path)) {  //是否未关闭
+    if(this->path2fd_.count(path)) {
         throw FileNotClosedError(path);
     }
     id=open(path.c_str(),O_RDWR);
@@ -168,18 +168,18 @@ void DiskManager::close_file(int fd) {
     // Todo:
     // 调用close()函数
     // 注意不能关闭未打开的文件，并且需要更新文件打开列表
-    if(!this->fd2path_.count(fd)) {  //是否未关闭
+    if(!this->fd2path_.count(fd)) {
         throw FileNotOpenError(fd);
     }
     if(close(fd) == -1) {
         throw UnixError();
         return;
     }
-    auto it1 = path2fd_.find(this->get_file_name(fd)); //删除path2fd中相应的映射
+    auto it1 = path2fd_.find(this->get_file_name(fd));
     if (it1 != path2fd_.end()) {
         path2fd_.erase(it1);
     }
-    auto it2 = fd2path_.find(fd); //删除fd2path中相应的映射
+    auto it2 = fd2path_.find(fd);
     if (it2 != fd2path_.end()) {
         fd2path_.erase(it2);
     }

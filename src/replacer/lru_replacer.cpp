@@ -50,10 +50,10 @@ void LRUReplacer::pin(frame_id_t frame_id) {
     // Todo:
     // 固定指定id的frame
     // 在数据结构中移除该frame
-    auto find = this->LRUhash_.find(frame_id);
-    if(find != this->LRUhash_.end()){
-        this->LRUlist_.erase(find->second);
-        this->LRUhash_.erase(find);
+    auto frame = this->LRUhash_.find(frame_id);
+    if(frame != this->LRUhash_.end()){
+        this->LRUlist_.erase(frame->second);
+        this->LRUhash_.erase(frame);
     }
     return;
 }
@@ -67,11 +67,12 @@ void LRUReplacer::unpin(frame_id_t frame_id) {
     //  支持并发锁
     //  选择一个frame取消固定
     std::scoped_lock lock{latch_};
-    auto find = LRUhash_.find(frame_id);
-    if(find == LRUhash_.end()) {
+    auto frame = LRUhash_.find(frame_id);
+    if(frame == LRUhash_.end()) {
         LRUlist_.push_front(frame_id);
         LRUhash_[frame_id] = LRUlist_.begin();
     }
+    return;
 }
 
 /**
