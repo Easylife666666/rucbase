@@ -109,7 +109,7 @@ void DiskManager::create_file(const std::string &path) {
     int id;
     if(this->is_file(path))
         throw FileExistsError(path);
-    id=open(path.c_str(),O_RDONLY|O_CREAT,0666);
+    id=open(path.c_str(),O_RDWR|O_CREAT,0666);
     if(id==-1)
         UnixError();
     close(id);
