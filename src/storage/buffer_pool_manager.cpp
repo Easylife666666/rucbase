@@ -86,6 +86,7 @@ Page* BufferPoolManager::fetch_page(PageId page_id) {
     if(!this->find_victim_page(&fid)){
         return nullptr;
     }
+    //这里存在疑问，这个true去掉后便不能通过测试？
     if(true||this->pages_[fid].is_dirty()){
         this->update_page(&this->pages_[fid],page_id,fid);
     }
@@ -93,35 +94,6 @@ Page* BufferPoolManager::fetch_page(PageId page_id) {
     this->replacer_->pin(fid);
     this->pages_[fid].pin_count_=1;
     return &this->pages_[fid];
-    /*
-    std::scoped_lock lock{latch_};
-    frame_id_t fid;
-    bool flag=0;
-    if(this->page_table_.find(page_id) != this->page_table_.end()){
-        fid=this->page_table_[page_id];
-        flag=1;
-    }
-    else{
-        if(!this->find_victim_page(&fid)){
-            return nullptr;
-        }
-        if(this->pages_[fid].is_dirty()){
-            this->update_page(&this->pages_[fid],page_id,fid);
-        }
-    }
-
-    this->replacer_->pin(fid);
-
-    this->disk_manager_->read_page(page_id.fd,page_id.page_no,this->pages_[fid].get_data(),PAGE_SIZE);
-
-    if (flag){
-        this->pages_[fid].pin_count_++;
-    }
-    else{
-        this->pages_[fid].pin_count_=1;
-    }
-    return &this->pages_[fid];
-    */
 }
 
 /**
