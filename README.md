@@ -1,5 +1,5 @@
 # Doc
-课设报告在docs\lh22331096数据库课程设计报告中
+课设报告在`docs/lh22331096数据库课程设计报告.md`中
 # Notice
 目前只做了lab1。
 为方便编辑，我直接把rucbase仓库迁移过来了。原仓库见：https://github.com/ruc-deke/rucbase-lab#
